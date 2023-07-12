@@ -1,3 +1,7 @@
+using Anime_API.Repositories;
+using Anime_API.Services;
+using static Anime_API.Repositories.AnimeRepositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -6,6 +10,11 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Add services to the container.
+builder.Services.AddScoped<IAnimeRepository, AnimeRepository>();
+builder.Services.AddScoped<IAnimeService, AnimeService>();
+
 
 var app = builder.Build();
 
@@ -19,6 +28,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
+
+
+
 
 app.MapControllers();
 

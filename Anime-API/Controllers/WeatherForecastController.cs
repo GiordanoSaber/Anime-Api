@@ -1,33 +1,52 @@
+using Anime_API.Models;
+using Anime_API.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Anime_API.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    [Route("api/animes")]
+    public class AnimeController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+        private readonly IAnimeService _animeService;
 
-        private readonly ILogger<WeatherForecastController> _logger;
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public AnimeController(IAnimeService animeService)
         {
-            _logger = logger;
+            _animeService = animeService;
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        [HttpGet]
+        public ActionResult<IEnumerable<AnimeModel>> GetAllAnimes()
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+            var animes = _animeService.GetAllAnimes();
+            return Ok(animes);
+        }
+
+        [HttpGet("{id}")]
+        public ActionResult<AnimeModel> GetAnimeById(int id)
+        {
+            var anime = _animeService.GetAnimeById(id);
+            if (anime == null)
             {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+                return NotFound();
+            }
+            return Ok(anime);
+        }
+
+        [HttpPost]
+        public ActionResult<AnimeModel> CreateAnime(AnimeModel anime)
+        {
+            // Agrega aquí la lógica de validación y asignación de valores adicionales
+            anime.Id_AnimeModel = _animeService.GenerateNewAnimeId();
+            anime.StartDate = DateTime.Now;
+            anime.Status = "Ongoing";
+
+            var createdAnime = _animeService.CreateAnime(anime);
+            return CreatedAtAction(nameof(GetAnimeById), new { id = createdAnime.Id_AnimeModel }, createdAnime);
         }
     }
 }
